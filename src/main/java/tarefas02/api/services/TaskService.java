@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional; // Anotação p
 import tarefas02.api.models.Task; // Importa o modelo da entidade Task
 import tarefas02.api.models.User; // Importa o modelo da entidade User
 import tarefas02.api.models.enums.ProfileEnums; // Importa o enum de perfis de acesso (ADMIN, USER)
+import tarefas02.api.models.projections.TaskProjection;
 import tarefas02.api.repositories.TaskRepository; // Importa a interface do repositório de tarefas
 import tarefas02.api.security.UserSpringSecurity; // Importa a classe de detalhes do usuário autenticado no Spring Security
 import tarefas02.api.exceptions.AuthorizationException; // Importa a exceção customizada para acesso negado (HTTP 403)
@@ -28,6 +29,8 @@ public class TaskService {
     // Injeta automaticamente a instância do UserService para buscas de usuário
     @Autowired
     private UserService userService;
+
+    /* 
 
     // Busca uma tarefa por ID validando se ela existe e se o usuário logado tem autorização para visualizá-la
     @Transactional(readOnly = true)
@@ -117,5 +120,68 @@ public class TaskService {
             // Captura exceções de violação de integridade e lança a exceção customizada (HTTP 409)
             throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
         }
+    }
+}
+}
+    */
+
+public Task findById(Long id){
+    Optional<Task> task = this.taskRepository.findById(id);
+
+    Task t = task.orElseThrow(() ->new ObjectNotFoundException(
+        "Tarefa não encontrada! Id:" + id + ", Tipo:" + Task.class.getName()));
+
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
+
+        if(Object.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnums.ADMIN) && !userHasTask(userSpringSecurity, t)){
+            throw new AuthorizationException("Acesso Negado, Voc~e não possui permissão para acessar esta tarefa.");
+        }
+        return t;
+    }
+
+    public List<TaskProjection> findByLoggedUser(){
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
+
+        if(Objects.isNull(userSpringSecurity){
+            throw new AuthorizationException("Acesso negado! Usuário não autenticado.");
+        }
+
+        return this.taskRepository.findByUser_Id(userSpringSecurity.getId());
+    }
+
+    @Transactional 
+    public Task create(Task obj){
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
+
+        if(Objects.isNull(userSpringSecurity)){
+            throw new AuthorizationException("Acesso negado, você precisa estar autenticado.");
+        }
+
+        User user = this.userService.findById(userSpringSecurity.getId());
+
+        obj.setId(null);
+        obj.setUser(user);
+
+        return this.taskRepository.save(obj);
+    }
+
+    @Transactional 
+    public Task update (Task obj){
+        Task newObj = findById(obj.getId());
+        newObj.setDescription(obj.getDescription());
+        return this.taskRepository.save(newObj);
+    }
+
+    public void delete(Long id){
+        findById(id);
+        try{
+            this.taskRepository.deleteById(id);
+        } catch (Exception e){
+            throw new AuthorizationException("Não foi possivel excluir a tarefa especificada");
+        }
+    }
+
+    private boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task){
+        return task.getUser().getId().equals(userSpringSecurity.getId());
     }
 }
