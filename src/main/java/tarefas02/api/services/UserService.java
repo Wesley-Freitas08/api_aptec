@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service; // Marca a classe como um serviç
 import org.springframework.transaction.annotation.Transactional; // Gerencia o contexto transacional do banco
 
 import tarefas02.api.models.User; // Modelo da entidade User
+import tarefas02.api.models.dtos.UserCreateDTO; // DTO de criação de usuário
+import tarefas02.api.models.dtos.UserUpdateDTO; // DTO de atualização de usuário
 import tarefas02.api.models.enums.ProfileEnums; // Enumerador com os perfis de acesso (ADMIN, USER)
 import tarefas02.api.repositories.UserRepository; // Repositório JPA para a entidade User
 import tarefas02.api.security.UserSpringSecurity; // Objeto de detalhes do usuário autenticado no Spring Security
@@ -97,5 +99,21 @@ public class UserService {
             // Lança exceção de conflito caso o usuário possua tarefas vinculadas
             throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
         }
+    }
+
+    // Converte UserCreateDTO em uma entidade User limpa (sem criptografia ainda)
+    public User fromDTO(UserCreateDTO dto) {
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(dto.getPassword());
+        return user;
+    }
+
+    // Converte UserUpdateDTO em uma entidade User contendo o ID e a nova senha
+    public User fromDTO(UserUpdateDTO dto) {
+        User user = new User();
+        user.setId(dto.getId());
+        user.setPassword(dto.getPassword());
+        return user;
     }
 }

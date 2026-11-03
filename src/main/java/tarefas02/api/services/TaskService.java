@@ -133,7 +133,7 @@ public Task findById(Long id){
 
         UserSpringSecurity userSpringSecurity = UserService.authenticated();
 
-        if(Object.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnums.ADMIN) && !userHasTask(userSpringSecurity, t)){
+        if(Objects.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnums.ADMIN) && !userHasTask(userSpringSecurity, t)){
             throw new AuthorizationException("Acesso Negado, Voc~e não possui permissão para acessar esta tarefa.");
         }
         return t;
@@ -142,7 +142,7 @@ public Task findById(Long id){
     public List<TaskProjection> findByLoggedUser(){
         UserSpringSecurity userSpringSecurity = UserService.authenticated();
 
-        if(Objects.isNull(userSpringSecurity){
+        if(Objects.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnums.ADMIN) && !userHasTask(userSpringSecurity, t)){
             throw new AuthorizationException("Acesso negado! Usuário não autenticado.");
         }
 
@@ -165,23 +165,34 @@ public Task findById(Long id){
         return this.taskRepository.save(obj);
     }
 
-    @Transactional 
-    public Task update (Task obj){
-        Task newObj = findById(obj.getId());
-        newObj.setDescription(obj.getDescription());
-        return this.taskRepository.save(newObj);
+    @Transactional(readOnly = true)
+    public List<TaskProjection> findAllByLoggedUser() {
+        UserSpringSecurity userSS = UserService.authenticated();
+    
+        if (Objects.isNull(userSS)) {
+            throw new AuthorizationException("Acesso negado! Usuário não autenticado.");
+        }
+    
+        return this.taskRepository.findByUser_Id(userSS.getId());
     }
-
-    public void delete(Long id){
-        findById(id);
-        try{
-            this.taskRepository.deleteById(id);
-        } catch (Exception e){
-            throw new AuthorizationException("Não foi possivel excluir a tarefa especificada");
+    
+        @Transactional 
+        public Task update (Task obj){
+            Task newObj = findById(obj.getId());
+            newObj.setDescription(obj.getDescription());
+            return this.taskRepository.save(newObj);
+        }
+    
+        public void delete(Long id){
+            findById(id);
+            try{
+                this.taskRepository.deleteById(id);
+            } catch (Exception e){
+                throw new AuthorizationException("Não foi possivel excluir a tarefa especificada");
+            }
+        }
+    
+        private boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task){
+            return task.getUser().getId().equals(userSpringSecurity.getId());
         }
     }
-
-    private boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task){
-        return task.getUser().getId().equals(userSpringSecurity.getId());
-    }
-}

@@ -102,6 +102,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder; // U
 
 import jakarta.validation.Valid; // Ativa a verificação das anotações de validação nos modelos
 import tarefas02.api.models.Task; // Modelo da entidade Task
+import tarefas02.api.models.projections.TaskProjection;
 import tarefas02.api.services.TaskService; // Serviço da entidade Task
 
 // Controller responsável pelos endpoints da API na rota /task
@@ -125,9 +126,9 @@ public class TaskController {
 
     // Endpoint para listar todas as tarefas do usuário logado: GET /task/user
     @GetMapping("/user")
-    public ResponseEntity<List<Task>> findAllByLoggedUser() {
+    public ResponseEntity<List<TaskProjection>> findAllByLoggedUser() {
         // Busca as tarefas pertencentes ao usuário extraído do token JWT
-        List<Task> list = this.taskService.findAllByLoggedUser();
+        List<TaskProjection> list = this.taskService.findAllByLoggedUser();
         // Retorna status HTTP 200 OK com a lista de tarefas
         return ResponseEntity.ok().body(list);
     }

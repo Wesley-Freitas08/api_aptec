@@ -1,60 +1,65 @@
-package tarefas02.api.controllers;
+package tarefas02.api.controllers; // Pacote dos controladores REST da aplicação
 
-import java.net.URI;
+import java.net.URI; // Importação da classe URI
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.beans.factory.annotation.Autowired; // Injeção de dependências do Spring
+import org.springframework.http.ResponseEntity; // Encapsulador de resposta HTTP
+import org.springframework.validation.annotation.Validated; // Ativa a validação na controller
+import org.springframework.web.bind.annotation.DeleteMapping; // Mapeia o método HTTP DELETE
+import org.springframework.web.bind.annotation.GetMapping; // Mapeia o método HTTP GET
+import org.springframework.web.bind.annotation.PathVariable; // Extração de variável da URL
+import org.springframework.web.bind.annotation.PostMapping; // Mapeia o método HTTP POST
+import org.springframework.web.bind.annotation.PutMapping; // Mapeia o método HTTP PUT
+import org.springframework.web.bind.annotation.RequestBody; // Extrai o corpo em JSON da requisição
+import org.springframework.web.bind.annotation.RequestMapping; // Mapeia o caminho base da rota
+import org.springframework.web.bind.annotation.RestController; // Marca a classe como Controller REST
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder; // Utilitário de construção de URIs
 
-import jakarta.validation.Valid;
-import tarefas02.api.models.User;
-import tarefas02.api.models.User.CreateUser;
-import tarefas02.api.models.User.UpdateUser;
-import tarefas02.api.services.UserService;
+import jakarta.validation.Valid; // Dispara o Bean Validation no parâmetro recebido
+import tarefas02.api.models.User; // Entidade User
+import tarefas02.api.models.dtos.UserCreateDTO; // DTO de criação de usuário
+import tarefas02.api.models.dtos.UserUpdateDTO; // DTO de atualização de usuário
+import tarefas02.api.services.UserService; // Serviço de usuários
 
 @RestController
 @RequestMapping("/user")
 @Validated
 public class UserController {
 
+    // Injeta o serviço de usuários
     @Autowired
     private UserService userService;
 
+    // Busca um usuário por ID: GET /user/{id}
     @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
         User obj = this.userService.findById(id);
         return ResponseEntity.ok().body(obj);
     }
 
+    // Endpoint de criação atualizado para receber o UserCreateDTO em vez da Entidade pura
     @PostMapping
-    @Validated(CreateUser.class)
-    public ResponseEntity<Void> create(@Valid @RequestBody User obj) {
-        this.userService.create(obj);
+    public ResponseEntity<Void> create(@Valid @RequestBody UserCreateDTO objDto) {
+        User obj = this.userService.fromDTO(objDto);
+        User newObj = this.userService.create(obj);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(obj.getId()).toUri();
-        return ResponseEntity.created(uri).build();
-    }
-
-    @PutMapping("/{id}")
-    @Validated(UpdateUser.class)
-    public ResponseEntity<Void> update(@Valid @RequestBody User obj, @PathVariable Long id) {
-        obj.setId(id);
-        this.userService.update(obj);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        this.userService.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-}
+                .path("/{id}").buildAndExpand(newObj.getId()).toUri();
+                return ResponseEntity.created(uri).build();
+            }
+        
+            // Endpoint de atualização de senha atualizado para receber o UserUpdateDTO
+            @PutMapping("/{id}")
+            public ResponseEntity<Void> update(@Valid @RequestBody UserUpdateDTO objDto, @PathVariable Long id) {
+                objDto.setId(id);
+                User obj = this.userService.fromDTO(objDto);
+                this.userService.update(obj);
+                return ResponseEntity.noContent().build();
+            }
+        
+            // Exclui um usuário existente: DELETE /user/{id}
+            @DeleteMapping("/{id}")
+            public ResponseEntity<Void> delete(@PathVariable Long id) {
+                this.userService.delete(id);
+                return ResponseEntity.noContent().build();
+            }
+        }
