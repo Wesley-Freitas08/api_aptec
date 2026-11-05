@@ -1,32 +1,42 @@
+// URL base da API Spring Boot
 const API_URL = "http://localhost:8080";
 
+// Função assíncrona responsável por cadastrar um novo usuário na API
 async function signup(event) {
-  event.preventDefault();
+    event.preventDefault(); // Evita a atualização padrão do formulário HTML
 
-  const usernameInput = document.getElementById("username").value;
-  const passwordInput = document.getElementById("password").value;
+    // Captura os valores informados nos campos de cadastro
+    const usernameInput = document.getElementById("username").value;
+    const passwordInput = document.getElementById("password").value;
 
-  try {
-    const response = await fetch(`${API_URL}/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({
-        username: usernameInput,
-        password: passwordInput
-      })
-    });
+    try {
+        // Envia requisição POST para o endpoint /user para cadastrar o usuário via UserCreateDTO
+        const response = await fetch(`${API_URL}/user`, {
+            method: "POST", // Método de criação
+            headers: {
+                "Content-Type": "application/json", // Define o envio de corpo JSON
+                "Accept": "application/json" // Aceita respostas JSON
+            },
+            // Converte o username e password informados em uma String JSON
+            body: JSON.stringify({
+                username: usernameInput,
+                password: passwordInput
+            })
+        });
 
-    if (response.ok) {
-      alert("Cadastro realizado com sucesso!");
-      window.location.href = "/login.html";
-    } else {
-      alert("Erro ao realizar cadastro. Tente novamente.");
+        // Se a resposta retornar Status 201 Created
+        if (response.ok) {
+            alert("Usuário cadastrado com sucesso! Faça login para continuar.");
+
+            // Redireciona o novo usuário para a página de login
+            window.location.href = "login.html";
+        } else {
+            // Exibe mensagem caso o cadastro falhe (ex: usuário já existente ou dados inválidos)
+            alert("Erro ao realizar cadastro. Verifique os dados fornecidos.");
+        }
+    } catch (error) {
+        // Captura e exibe falhas de conexão no console
+        console.error("Erro na requisição de cadastro:", error);
+        alert("Erro ao conectar com o servidor.");
     }
-  } catch (error) {
-    console.error("Erro ao fazer cadastro:", error);
-    alert("Ocorreu um erro ao fazer cadastro. Por favor, tente novamente.");
-  }
 }

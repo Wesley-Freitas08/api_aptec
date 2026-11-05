@@ -142,7 +142,8 @@ public Task findById(Long id){
     public List<TaskProjection> findByLoggedUser(){
         UserSpringSecurity userSpringSecurity = UserService.authenticated();
 
-        if(Objects.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnums.ADMIN) && !userHasTask(userSpringSecurity, t)){
+        // As Task is not available here, remove userHasTask check or adjust logic as needed
+        if (Objects.isNull(userSpringSecurity)) {
             throw new AuthorizationException("Acesso negado! Usuário não autenticado.");
         }
 

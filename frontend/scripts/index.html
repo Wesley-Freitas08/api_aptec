@@ -1,0 +1,102 @@
+<!DOCTYPE html> <!-- Define a especificação HTML5 -->
+<html lang="pt-br"> <!-- Define o idioma como Português do Brasil -->
+
+<head>
+    <meta charset="UTF-8"> <!-- Configuração de caracteres UTF-8 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport responsiva -->
+    <title>Minhas Tarefas - Gerenciador</title> <!-- Título da página principal -->
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <!-- Barra de navegação do topo com botão de logout -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand mb-0 h1">Gerenciador de Tarefas</span> <!-- Logotipo/Título da aplicação -->
+            
+            <!-- Botão de logout que chama a função logout() ao ser clicado -->
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm">Sair / Logout</button>
+        </div>
+    </nav>
+
+    <div class="container mb-5"> <!-- Container principal da página -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h4 class="mb-0 text-primary">Minhas Tarefas</h4> <!-- Título do bloco das tarefas -->
+                    </div>
+
+                    <div class="card-body p-4">
+                        <!-- Formulário para Criar Nova Tarefa (Create) -->
+                        <form id="create-task-form" onsubmit="createTask(event)" class="mb-4">
+                            <label for="new-task-description" class="form-label fw-bold">Nova Tarefa</label>
+                            <div class="input-group">
+                                <input type="text" id="new-task-description" class="form-control" placeholder="Digite uma descrição para a nova tarefa..." required minlength="1" maxlength="255">
+                                <button class="btn btn-primary px-4" type="submit">
+                                    <i class="bi bi-plus-circle me-1"></i> Adicionar
+                                </button>
+                            </div>
+                        </form>
+
+                        <hr class="text-muted">
+
+                        <!-- Elemento visual de carregamento (spinner) escondido por padrão -->
+                        <div id="loading" class="text-center my-3" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+
+                        <!-- Lista onde as tarefas recebidas da API serão injetadas via JavaScript (Read) -->
+                        <ul id="tasks-list" class="list-group">
+                            <!-- Os elementos <li> com as tarefas serão montados dinamicamente pelo script.js -->
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Edição de Tarefas (Update) -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form onsubmit="updateTask(event)">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editTaskModalLabel">Editar Tarefa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Campo oculto para guardar o ID da tarefa que está sendo editada -->
+                        <input type="hidden" id="edit-task-id">
+                        
+                        <div class="mb-3">
+                            <label for="edit-task-description" class="form-label">Descrição da Tarefa</label>
+                            <input type="text" class="form-control" id="edit-task-description" required minlength="1" maxlength="255">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JavaScript Bundle com suporte a componentes modais -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Importação do script JavaScript global para controle das tarefas e sessão -->
+    <script src="scripts/script.js"></script>
+</body>
+
+</html>
